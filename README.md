@@ -130,14 +130,20 @@ This project is inspired by and builds upon:
 - [iGSM](https://github.com/facebookresearch/iGSM) by Facebook Research
 - [PRM](https://github.com/sdiehl/prm) by Stephen Diehl
 
+(This repo is forked from [iGSM](https://github.com/facebookresearch/iGSM) by using their hierarchical entity vocabulary and graph QA construction.)
+
 ---
 
 ## Citation
 
 ```bibtex
-@article{gsm-dc2025,
-  title={How Is LLM Reasoning Distracted by Irrelevant Context? An Analysis Using a Controlled Benchmark},
-  author={Anonymous}
-  year={2025}
+@misc{yang2025llmreasoningdistractedirrelevant,
+      title={How Is LLM Reasoning Distracted by Irrelevant Context? An Analysis Using a Controlled Benchmark}, 
+      author={Minglai Yang and Ethan Huang and Liang Zhang and Mihai Surdeanu and William Wang and Liangming Pan},
+      year={2025},
+      eprint={2505.18761},
+      archivePrefix={arXiv},
+      primaryClass={cs.CL},
+      url={https://arxiv.org/abs/2505.18761}, 
 }
 ```
