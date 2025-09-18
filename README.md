@@ -1,4 +1,4 @@
-# GSM-DC
+# How is LLM Distracted by Irrelevant Context? An Analysis Using a Controlled Benchmark
 ---
 GSM-DC is synthetic data generator and evaluator, developed to study the reasoning robustness of LLMs under irrelevant context.
 ---
