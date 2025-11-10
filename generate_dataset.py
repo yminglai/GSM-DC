@@ -297,4 +297,4 @@ output_file = os.path.join(output_dir, "in_distribution_dataset.json")
 with open(output_file, "w", encoding="utf-8") as f:
     json.dump(data, f, ensure_ascii=False, indent=4)
 
-print(f"\n总共 {len(data)} 条数据已存储到 {output_file}")
+print(f"\nAll {len(data)} have been saved to: {output_file}")
