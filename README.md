@@ -118,8 +118,19 @@ Metrics:
 
 To test your own LLM using the GSM-DC dataset:
 - Run `test_batch_saved.py`
-- Set `MODEL_PATH` and `DATASET_PATH` to your HuggingFace repo or checkpoint (Relase after paper submission and review)
+- Set `MODEL_PATH` and `DATASET_PATH` to your HuggingFace repo or checkpoint
 - Optionally enable tree search and PRM reranking
+
+### Dataset
+
+**Sample Dataset**: A representative sample of our test set is available at [YMinglai/GSM-DC-Dataset-Sample](https://huggingface.co/datasets/YMinglai/GSM-DC-Dataset-Sample)
+
+**Note**: The full GSM-DC dataset is designed to be **generated on-the-fly** using the tools in this repository. This allows researchers to:
+- Control problem complexity (number of operations, reasoning depth)
+- Adjust irrelevant context injection (noise level, distractor count)
+- Generate unlimited evaluation sets with different characteristics
+
+The sample dataset contains 6,300 problems (OP 2-22) as a both in-distribution and out-of-distribution test set for full evaluation.
 
 ---
 
@@ -137,13 +148,27 @@ This project is inspired by and builds upon:
 ## Citation
 
 ```bibtex
-@misc{yang2025llmreasoningdistractedirrelevant,
-      title={How Is LLM Reasoning Distracted by Irrelevant Context? An Analysis Using a Controlled Benchmark}, 
-      author={Minglai Yang and Ethan Huang and Liang Zhang and Mihai Surdeanu and William Wang and Liangming Pan},
-      year={2025},
-      eprint={2505.18761},
-      archivePrefix={arXiv},
-      primaryClass={cs.CL},
-      url={https://arxiv.org/abs/2505.18761}, 
+@inproceedings{yang-etal-2025-llm-reasoning,
+    title = "How Is {LLM} Reasoning Distracted by Irrelevant Context? An Analysis Using a Controlled Benchmark",
+    author = "Yang, Minglai  and
+      Huang, Ethan  and
+      Zhang, Liang  and
+      Surdeanu, Mihai  and
+      Wang, William Yang  and
+      Pan, Liangming",
+    editor = "Christodoulopoulos, Christos  and
+      Chakraborty, Tanmoy  and
+      Rose, Carolyn  and
+      Peng, Violet",
+    booktitle = "Proceedings of the 2025 Conference on Empirical Methods in Natural Language Processing",
+    month = nov,
+    year = "2025",
+    address = "Suzhou, China",
+    publisher = "Association for Computational Linguistics",
+    url = "https://aclanthology.org/2025.emnlp-main.674/",
+    doi = "10.18653/v1/2025.emnlp-main.674",
+    pages = "13340--13358",
+    ISBN = "979-8-89176-332-6",
+    abstract = "We introduce Grade School Math with Distracting Context (GSM-DC), a synthetic benchmark to evaluate Large Language Models' (LLMs) reasoning robustness against systematically controlled irrelevant context (IC). GSM-DC constructs symbolic reasoning graphs with precise distractor injections, enabling rigorous, reproducible evaluation. Our experiments demonstrate that LLMs are significantly sensitive to IC, affecting both reasoning path selection and arithmetic accuracy. Additionally, training models with strong distractors improves performance in both in-distribution and out-of-distribution scenarios. We further propose a stepwise tree search guided by a process reward model, which notably enhances robustness in out-of-distribution conditions."
 }
 ```

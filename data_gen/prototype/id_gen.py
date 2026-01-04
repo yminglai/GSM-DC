@@ -1,3 +1,8 @@
+# Copyright (c) Meta Platforms, Inc. and affiliates.
+# 
+# This source code is licensed under the license found in the
+# LICENSE file in the root directory of this source tree.
+
 import random
 from const.params import dot
 from math_gen.problem_gen import Problem
@@ -248,7 +253,7 @@ class IdGen_PT(object):
                     "perm": perm, # make the solution's order different from problem's.
                 }
                 self.problem = Problem(self.d, self.w0, self.w1, self.e, self.p, args=args, be_shortest=self.be_shortest)
-                feasible = self.problem.gen(self.n, self.m, self.s, noise_level=self.noise_level)
+                feasible = self.problem.gen(self.n, self.m, self.s, self.noise_level)
                 if not feasible:
                     continue
                 self.problem.to_problem()

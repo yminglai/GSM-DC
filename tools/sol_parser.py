@@ -1,3 +1,8 @@
+# Copyright (c) Meta Platforms, Inc. and affiliates.
+# 
+# This source code is licensed under the license found in the
+# LICENSE file in the root directory of this source tree.
+
 from math_gen.problem_gen import Problem, Num, mod
 from collections import defaultdict as dd
 from tools.tools import MyPrint, idle_func
@@ -344,6 +349,10 @@ class Parser(object):
                     duplicate = True
                 param_name = sentence.param_part
                 param = problem.name2param(param_name=param_name)
+
+                if param != None and param not in problem.whole_template.nodes():
+                    problem.whole_template.add_node(param)
+
                 if duplicate:
                     assert param is not None
                 else:
@@ -370,5 +379,3 @@ class Parser(object):
                     self.incorrect_lst.append((param, missing_but_required_param_lst, existing_but_not_required_param_lst))
                     return
                     # print(sentence.param_part)
-
-

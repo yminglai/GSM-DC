@@ -1,3 +1,8 @@
+# Copyright (c) Meta Platforms, Inc. and affiliates.
+# 
+# This source code is licensed under the license found in the
+# LICENSE file in the root directory of this source tree.
+
 from matplotlib.patches import ArrowStyle
 from typing import Dict, Callable, Any, Tuple
 import numpy as np
@@ -16,27 +21,32 @@ class Graph():
         if e does not satisfy: (d-1) * w1 ** 2 >= e >= (d-1) * w0,
         choose the feasible e closest to the original e.
         '''
+        # 调整边数 `e` 使其在合理范围内
         if (d-1) * w1 ** 2 < e:
-            e = (d-1) * w1 ** 2 
+            e = (d-1) * w1 ** 2  # 限制最大边数
         elif e < (d-1) * w0:
-            e = (d-1) * w0
+            e = (d-1) * w0  # 限制最小边数
 
-        self.d = d
-        self.w0 = w0
-        self.w1 = w1
-        self.e = min(e + 1, (self.d-1)*self.w1**2)
-        self.p = p
-        self.perm = perm
-        self.record = {}
-        self.rand = (-1, 0, 0, 0)
-        self.dist = dist if dist is not None else {}
+        # 设定基本参数
+        self.d = d  # 层数
+        self.w0 = w0  # 每层最小宽度
+        self.w1 = w1  # 每层最大宽度
+        self.e = e  # 边数
+        self.p = p  # 额外添加节点的概率
+        self.perm = perm  # 是否允许拓扑排序随机化
+        
+        # 记录信息
+        self.record = {}  # 存储图结构信息
+        self.rand = (-1, 0, 0, 0)  # 代表随机变量的占位符
+        
+        # 设定分布 `dist`
+        self.dist = dist if dist is not None else {}  # 若 `dist` 为空，则初始化为空字典
 
     def init(self):
         self.topological_order = None
         self.problem_order = None
         # construct self.l: layer list
         self.l = np.ones(self.d, dtype=int) * self.w0
-
         while True:
             if self.valid == "add vertex":
                 _ = self.add_vertex()
@@ -52,6 +62,7 @@ class Graph():
         # TODO: select some nodes to be unique
         self.unique = []
 
+        # define the remaining items, internal parameters and the chosen parameters
         eoc = [(i, j, k) for i in range(self.d-1) for j in range(self.l[i]) for k in range(self.l[i+1])] # edges of the complement graph
         self.record['remain'] = [] # add elements later
         self.record['inter'] = [(i, j, k) for i in range(self.d-1) for j in range(self.l[i]) for k in range(i+1, self.d)]
@@ -70,7 +81,6 @@ class Graph():
             n_exist += self.l[i + 1]
         n_remain = self.e - n_exist
         eor = random.sample(eoc, n_remain) # edge of remaining
-        self._extra_pool = eoc[:]
         self.record['remain'] += eor
         for i, j, k in eor:
             self.G[i][j, k] = True
@@ -105,9 +115,11 @@ class Graph():
             if hasattr(self, attr):
                 print(f"{attr}={getattr(self, attr)}")
         for attr in ['topological_order', 'problem_order']:
+            # if hasattr(self, attr):
+            #     print(f"{attr}={getattr(self, attr)}, op={self.op_num(getattr(self, attr))}")
             if hasattr(self, attr):
                 params = getattr(self, attr)
-                if params is not None:
+                if params is not None:  # 先检查 params 是否为 None
                     print(f"{attr}={params}, op={self.op_num(params)}")
                 else:
                     print(f"{attr}=None")
@@ -416,22 +428,15 @@ class Graph():
                     if v not in self.template.predecessors(param):
                         self.template.add_edge(v, param)
 
-    def design_unused(self, max_param=4, target_range=None):
+    def design_unused(self, max_param=4):
         '''
         difference between self.problem_order and self.record['chosen']:
         self.problem_order only contains parameters appeared in the problem in a proper order,
         self.record['chosen'] does not contain order information and it also contains internal parameters that can be derived now.
         '''
-        low, high = (None, None) if target_range is None else target_range
-        self.problem_order = copy.deepcopy(self.topological_order)
-        self.independent = []
         self.problem_order = copy.deepcopy(self.topological_order)
         self.independent = []
         while self.record['remain']:
-            if high is not None:
-                n_irrel = len(self.find_irrelevant_nodes_edges()[0])
-                if n_irrel >= high:
-                    break          # 已达上限，停止注入     
             i, j, k = random.choice(self.record['remain'])
             param = (0, i, j, k)
             self.template.add_node(param)
@@ -488,6 +493,7 @@ class Graph():
                 self.independent.append(param)
                 self.problem_order.append(param)
             else: self.problem_order.append(param)
+
     def gen_debug(self, n, m, s, first=-1, max_param=4):
         '''
         n is the operation needed for internal parameters

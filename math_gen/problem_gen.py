@@ -1,26 +1,7 @@
-CONDITION_RANGES = {
-    2: {"light": (0, 2), "medium": (3, 5), "hard": (6, 19)},
-    3: {"light": (0, 1), "medium": (2, 7), "hard": (8, 19)},
-    4: {"light": (0, 2), "medium": (3, 5), "hard": (6, 19)},
-    5: {"light": (0, 2), "medium": (3, 5), "hard": (6, 19)},
-    6: {"light": (0, 2), "medium": (3, 5), "hard": (6, 19)},
-    7: {"light": (0, 2), "medium": (3, 5), "hard": (6, 19)},
-    8: {"light": (0, 1), "medium": (2, 3), "hard": (4, 19)},
-    9: {"light": (0, 1), "medium": (2, 2), "hard": (3, 19)},
-    10: {"light": (0, 1), "medium": (2, 2), "hard": (3, 19)},
-    11: {"light": (0, 1), "medium": (2, 2), "hard": (3, 19)},
-    12: {"light": (0, 0), "medium": (1, 2), "hard": (3, 19)},
-    13: {"light": (0, 0), "medium": (1, 2), "hard": (3, 19)},
-    14: {"light": (0, 0), "medium": (1, 2), "hard": (3, 19)},
-    15: {"light": (0, 0), "medium": (1, 2), "hard": (3, 19)},
-    16: {"light": (0, 0), "medium": (1, 1), "hard": (2, 19)},
-    17: {"light": (0, 0), "medium": (1, 1), "hard": (2, 19)},
-    18: {"light": (0, 0), "medium": (1, 1), "hard": (2, 19)},
-    19: {"light": (0, 0), "medium": (1, 1), "hard": (2, 19)},
-    20: {"light": (0, 0), "medium": (1, 1), "hard": (2, 19)},
-    21: {"light": (0, 0), "medium": (1, 1), "hard": (2, 19)},
-    22: {"light": (0, 0), "medium": (1, 1), "hard": (2, 19)},
-}
+# Copyright (c) Meta Platforms, Inc. and affiliates.
+# 
+# This source code is licensed under the license found in the
+# LICENSE file in the root directory of this source tree.
 
 from data_gen.categ import Data
 from math_gen.graph_gen import Graph
@@ -35,92 +16,113 @@ from const.params import mod, try_num, feasible_symbols
 
 class Num(object):
     def __init__(self, a: Union[int, str]=None, mod=mod, mul=False) -> None:
-        self.mod = mod
-        if a == None:
+        self.mod = mod  # 取模数
+        if a == None:  # 若未提供初值
             if mul:
-                self.a = random.randint(1, self.mod - 1)
+                self.a = random.randint(1, self.mod - 1)  # 随机生成 1 到 mod-1 的整数
             else:
-                self.a = random.randint(0, self.mod - 1)
+                self.a = random.randint(0, self.mod - 1)  # 随机生成 0 到 mod-1 的整数
         elif isinstance(a, str):
-            self.a = int(a) % self.mod
+            self.a = int(a) % self.mod  # 若 a 是字符串，则转为整数并取模
         else:
-            self.a = a % self.mod
+            self.a = a % self.mod  # 其他情况，直接取模
+    
+    # 重载加法运算符
     def __add__(self, other):
         if isinstance(other, Num):
-            return Num(self.a + other.a, self.mod)
+            return Num(self.a + other.a, self.mod)  # 若 `other` 也是 `Num`，执行模加
         else:
-            return Num(self.a + other, self.mod)
+            return Num(self.a + other, self.mod)  # 直接加整数
+
+    # 重载减法运算符
     def __sub__(self, other):
         if isinstance(other, Num):
-            return Num(self.a - other.a, self.mod)
+            return Num(self.a - other.a, self.mod)  # 模减
         else:
             return Num(self.a - other, self.mod)
+
+    # 重载乘法运算符
     def __mul__(self, other):
         if isinstance(other, Num):
-            return Num(self.a * other.a, self.mod)
+            return Num(self.a * other.a, self.mod)  # 模乘
         else:
             return Num(self.a * other, self.mod)
+
+    # 重载等号运算符
     def __eq__(self, other: Union['Num', int]) -> bool:
         if isinstance(other, int):
-            return self.a == other
+            return self.a == other  # 直接比较数值
         else:
-            return self.a == other.a
+            return self.a == other.a  # 比较 `Num` 对象的值
+
+    # 将对象转换为字符串
     def __str__(self) -> str:
         return str(self.a)
 
 class Expression(object):
     def __init__(self, value: Union[List['Expression'], Num, int]=None, op: str=None, param: tuple=None, set_value: Union[Num, int]=None) -> None:
-        if isinstance(value, list):
+        '''
+        三种情况：
+        1. 变量由其他值定义：value=list(...), op=..., param=param
+        2. 变量是中间计算值：value=list(...), op=..., param=None
+        3. 变量是一个确定的数值：value=value, op=None, param=None
+        '''
+        if isinstance(value, list):  # 若 `value` 是列表，则表示它依赖于其他参数
             self.param_list = value
-            if set_value != None:
+            if set_value != None:  # 如果有设定值
                 self.value = set_value if isinstance(set_value, Num) else Num(set_value)
-        else:
+        else:  # 否则 `value` 是一个数字
             if isinstance(value, int):
                 self.value = Num(value)
             elif isinstance(value, Num):
                 self.value = value
-            self.param_list = []
+            self.param_list = []  # 参数列表为空
 
-        self.op = op
-        self.param = param
+        self.op = op  # 存储运算符
+        self.param = param  # 参数信息
 
+    # 获取计算后的数值
     @property
     def get_value(self):
         if hasattr(self, "value"):
-            return self.value 
-        iterable = [param.get_value for param in self.param_list]
+            return self.value  # 若 `value` 已赋值，直接返回
+        iterable = [param.get_value for param in self.param_list]  # 递归获取参数值
         if self.op == "diff":
-            return iterable[0] - iterable[1]
+            return iterable[0] - iterable[1]  # 差值运算
         if self.op == "mul":
-            return iterable[0] * iterable[1]
-        return sum(iterable, start=Num(0))
+            return iterable[0] * iterable[1]  # 乘法运算
+        return sum(iterable, start=Num(0))  # 默认加法运算
 
+    # 简化表达式
     def simplify(self):
         if len(self.param_list) == 1:
             if self.param == None:
                 if hasattr(self.param_list[0], "value"):
-                    self.value = self.param_list[0].value
+                    self.value = self.param_list[0].value  # 赋值
                 self.op = self.param_list[0].op
                 self.param = self.param_list[0].param
                 self.param_list = self.param_list[0].param_list
-                self.simplify()
+                self.simplify()  # 递归简化
                 return
             elif self.param_list[0].param == None:
                 if hasattr(self.param_list[0], "value"):
-                    self.value = self.param_list[0].value
+                    self.value = self.param_list[0].value  # 赋值
                 self.op = self.param_list[0].op
                 self.param_list = self.param_list[0].param_list
                 self.simplify()
                 return
 
         for param in self.param_list:
-            param.simplify()
+            param.simplify()  # 递归简化子表达式
+
+    # 将表达式二叉化
     def binarify(self):
         for param in self.param_list:
-            param.binarify()
+            param.binarify()  # 递归二叉化
         if len(self.param_list) > 2:
-            self = self.make_bi(self.param_list)
+            self = self.make_bi(self.param_list)  # 调用 `make_bi` 处理
 
+    # 递归转换为二叉表达式
     def make_bi(self, lst: list) -> 'Expression':
         if len(lst) == 2:
             return Expression(value=lst, op="add")
@@ -129,9 +131,10 @@ class Expression(object):
             lst.remove(exp0)
             lst.remove(exp1)
             exp = Expression(value=[exp0, exp1], op="add")
-            lst.insert(0, exp)
-            return self.make_bi(lst=lst)
+            lst.insert(0, exp)  # 插入新表达式
+            return self.make_bi(lst=lst)  # 递归处理
 
+    # 递归显示表达式结构
     def display(self, level=0, scale=4):
         space = " " * (4*level)
         op = " -" + self.op if self.op != None else ""
@@ -148,15 +151,15 @@ class Expression(object):
 
 
 class Problem(Graph):
-    rand_perm: str
-    define_var: bool
-    define_detail: bool
-    inter_var: bool
-    name_omit: bool
-    cal_omit: bool 
-    dot: str
-    symbol_method: str
-    sol_sort: bool
+    rand_perm: str  # 随机排列方法
+    define_var: bool  # 是否定义变量
+    define_detail: bool  # 是否提供详细定义
+    inter_var: bool  # 是否将问题拆解为更小的步骤
+    name_omit: bool  # 是否省略变量名
+    cal_omit: bool  # 是否省略计算过程
+    dot: str  # 变量命名时的连接符
+    symbol_method: str  # 符号生成方式 ('rand' 或 'seq')
+    sol_sort: bool  # 是否对解的步骤进行排序
     def __init__(self, d, w0, w1, e, p, args: dict, dist: Dict[str, Callable[[], Any]]=None, be_shortest: bool=True) -> None:
         '''
         Only define_detail=True is verified. When using False case, please print out to see if the output is correct.
@@ -171,103 +174,200 @@ class Problem(Graph):
         if e does not satisfy: (d-1) * w1 ** 2 >= e >= (d-1) * w0,
         choose the feasible e closest to the original e.
         '''
-        super().__init__(d, w0, w1, e, p, args['perm'], dist=dist)
-        self.args = args 
+        super().__init__(d, w0, w1, e, p, args['perm'], dist=dist)  # 初始化 `Graph`
+        self.args = args  # 存储参数字典
         for key, val in args.items():
-            setattr(self, key, val)
-        self.be_shortest = be_shortest
+            setattr(self, key, val)  # 动态设置类属性
+        self.be_shortest = be_shortest  # 是否寻找最短解
 
-        self.lookup: Dict[tuple, Num] = {}
-        self.name_dict: Dict[tuple, str] = {}
-        self.prob_dict: Dict[tuple, str] = {}
-        self.sketch: Dict[tuple, Expression] = {}
-        self.problem: List[str] = []
-        self.question = []
-        self.solution: List[str] = []
-        self.answer = []
-        self.symbols = copy.deepcopy(feasible_symbols)
-        self.all_symbols = copy.deepcopy(feasible_symbols)
-        self.perm_level_ = -1
-        self.detail_level_ = -1 
-        self.add_unused = False
+        # 关键数据结构
+        self.lookup: Dict[tuple, Num] = {}  # 参数到数值的映射
+        self.name_dict: Dict[tuple, str] = {}  # 参数到变量名的映射
+        self.prob_dict: Dict[tuple, str] = {}  # 参数到问题描述的映射
+        self.sketch: Dict[tuple, Expression] = {}  # 参数到数学表达式的映射
+        self.problem: List[str] = []  # 生成的问题文本
+        self.question = []  # 问题部分
+        self.solution: List[str] = []  # 解决方案
+        self.answer = []  # 答案部分
+        self.symbols = copy.deepcopy(feasible_symbols)  # 变量符号池
+        self.all_symbols = copy.deepcopy(feasible_symbols)  # 所有可用符号
+        self.perm_level_ = -1  # 权限等级
+        self.detail_level_ = -1  # 详细程度等级
+        self.add_unused = True  # 是否添加未使用的变量
         self.l = np.ones(self.d, dtype=int) * self.w0
 
 
-    def gen(
-        self,
-        n: int,
-        m: int,
-        s: int,
-        noise_level: str = "light",
-        first: int = -1,
-        max_param: int = 4,
-        fix_categ: Union[int, None] = None,
-    ) -> bool:
-        """
-        Build the problem template and, if requested, inject distractor
-        (type-2) parameters using `design_unused`.
-        """
+    def gen(self, n, m, s, noise_level="light", first=-1, max_param=4, fix_categ: Union[None, int]=None):
+        '''
+        n is the operation needed for internal parameters
+        m is the total number of minimal required operations
+        s is the total number of operations
+        first determine the type of the final question
+        self.design_unused(max_param=4) determine the maximal number of parametered can appear in a single sentence
+        '''
+        CONDITION_RANGES = {
+            2: {
+                "light": {"irr_nodes": (0, 2), "irr_edges": (1, 100000)},    # Low: Nodes range [0,1], Edges range [0,6]
+                "medium": {"irr_nodes": (3, 5), "irr_edges": (1, 100000)},    # Mid: Nodes range [2,4], Edges range [7,9]
+                "hard": {"irr_nodes": (6, 100000), "irr_edges": (1, 100000)}   # High: Nodes range [5,17], Edges range [10,32]
+            },
+            3: {
+                "light": {"irr_nodes": (0, 1), "irr_edges": (1, 100000)},    # Low: Nodes range [0,1], Edges range [0,6]
+                "medium": {"irr_nodes": (2, 7), "irr_edges": (1, 100000)},    # Mid: Nodes range [2,4], Edges range [7,9]
+                "hard": {"irr_nodes": (8, 100000), "irr_edges": (1, 100000)}   # High: Nodes range [5,17], Edges range [10,32]
+            },
+            4: {
+                "light": {"irr_nodes": (0, 2), "irr_edges": (1, 100000)},    # Low: Nodes range [0,1], Edges range [0,6]
+                "medium": {"irr_nodes": (3, 5), "irr_edges": (1, 100000)},    # Mid: Nodes range [2,3], Edges range [7,9]
+                "hard": {"irr_nodes": (6, 100000), "irr_edges": (1, 100000)}   # High: Nodes range [4,15], Edges range [10,36]
+            },
+            5: {
+                "light": {"irr_nodes": (0, 2), "irr_edges": (1, 100000)},    # Low: Nodes range [0,1], Edges range [0,6]
+                "medium": {"irr_nodes": (3, 5), "irr_edges": (1, 100000)},    # Mid: Nodes range [2,3], Edges range [7,9]
+                "hard": {"irr_nodes": (6, 100000), "irr_edges": (1, 100000)}   # High: Nodes range [4,15], Edges range [10,36]
+            },
+            6: {
+                "light": {"irr_nodes": (0, 2), "irr_edges": (1, 100000)},    # Low: Nodes range [0,1], Edges range [0,6]
+                "medium": {"irr_nodes": (3, 5), "irr_edges": (1, 100000)},    # Mid: Nodes range [2,3], Edges range [7,9]
+                "hard": {"irr_nodes": (6, 100000), "irr_edges": (1, 100000)}   # High: Nodes range [4,15], Edges range [10,36]
+            },
+            7: {
+                "light": {"irr_nodes": (0, 2), "irr_edges": (1, 100000)},    # Low: Nodes range [0,1], Edges range [0,6]
+                "medium": {"irr_nodes": (3, 5), "irr_edges": (1, 100000)},    # Mid: Nodes range [2,3], Edges range [7,9]
+                "hard": {"irr_nodes": (6, 100000), "irr_edges": (1, 100000)}   # High: Nodes range [4,15], Edges range [10,36]
+            },
+            8: {
+                "light": {"irr_nodes": (0, 1), "irr_edges": (0, 100000)},    # Low: Nodes range [0,1], Edges range [0,7]
+                "medium": {"irr_nodes": (2, 3), "irr_edges": (0, 100000)},   # Mid: Nodes range [2,3], Edges range [8,10]
+                "hard": {"irr_nodes": (4, 100000), "irr_edges": (0, 100000)}   # High: Nodes range [4,12], Edges range [11,30]
+            },
+            9: {
+                "light": {"irr_nodes": (0, 1), "irr_edges": (0, 100000)},    # Low: Nodes range [0,1], Edges range [0,7]
+                "medium": {"irr_nodes": (2, 2), "irr_edges": (0, 100000)},   # Mid: Nodes range [2,2], Edges range [8,10]
+                "hard": {"irr_nodes": (3, 100000), "irr_edges": (0, 100000)}   # High: Nodes range [3,13], Edges range [11,28]
+            },
+            10: {
+                "light": {"irr_nodes": (0, 1), "irr_edges": (0, 100000)},    # Low: Nodes range [0,1], Edges range [0,7]
+                "medium": {"irr_nodes": (2, 2), "irr_edges": (0, 100000)},   # Mid: Nodes range [2,2], Edges range [8,10]
+                "hard": {"irr_nodes": (3, 11000003), "irr_edges": (0, 100000)}   # High: Nodes range [3,13], Edges range [11,28]
+            },    
+            11: {
+                "light": {"irr_nodes": (0, 1), "irr_edges": (0, 100000)},    # Low: Nodes range [0,1], Edges range [0,7]
+                "medium": {"irr_nodes": (2, 2), "irr_edges": (0, 100000)},   # Mid: Nodes range [2,2], Edges range [8,10]
+                "hard": {"irr_nodes": (3, 11000003), "irr_edges": (0, 100000)}   # High: Nodes range [3,13], Edges range [11,28]
+            },
+            12: {
+                "light": {"irr_nodes": (0, 0), "irr_edges": (0, 100000)},    # Low: Nodes range [0,1], Edges range [0,7]
+                "medium": {"irr_nodes": (1, 2), "irr_edges": (0, 100000)},   # Mid: Nodes range [2,2], Edges range [8,10]
+                "hard": {"irr_nodes": (3, 11000003), "irr_edges": (0, 100000)}   # High: Nodes range [3,13], Edges range [11,28]
+            },
+            13: {
+                "light": {"irr_nodes": (0, 0), "irr_edges": (0, 100000)},    # Low: Nodes range [0,1], Edges range [0,7]
+                "medium": {"irr_nodes": (1, 2), "irr_edges": (0, 100000)},   # Mid: Nodes range [2,2], Edges range [8,10]
+                "hard": {"irr_nodes": (3, 11000003), "irr_edges": (0, 100000)}   # High: Nodes range [3,13], Edges range [11,28]
+            },
+            14: {
+                "light": {"irr_nodes": (0, 0), "irr_edges": (0, 100000)},    # Low: Nodes range [0,1], Edges range [0,7]
+                "medium": {"irr_nodes": (1, 2), "irr_edges": (0, 100000)},   # Mid: Nodes range [2,2], Edges range [8,10]
+                "hard": {"irr_nodes": (3, 11000003), "irr_edges": (0, 100000)}   # High: Nodes range [3,13], Edges range [11,28]
+            },
+            15: {
+                "light": {"irr_nodes": (0, 0), "irr_edges": (0, 100000)},    # Low: Nodes range [0,1], Edges range [0,7]
+                "medium": {"irr_nodes": (1, 2), "irr_edges": (0, 100000)},   # Mid: Nodes range [2,2], Edges range [8,10]
+                "hard": {"irr_nodes": (3, 11000003), "irr_edges": (0, 100000)}   # High: Nodes range [3,13], Edges range [11,28]
+            },
+            16: {
+                "light": {"irr_nodes": (0, 0), "irr_edges": (0, 100000)},    # Low: Nodes range [0,1], Edges range [0,7]
+                "medium": {"irr_nodes": (1, 1), "irr_edges": (0, 100000)},   # Mid: Nodes range [2,2], Edges range [8,10]
+                "hard": {"irr_nodes": (2, 11000003), "irr_edges": (0, 100000)}   # High: Nodes range [3,13], Edges range [11,28]
+            },
+            17: {
+                "light": {"irr_nodes": (0, 0), "irr_edges": (0, 100000)},    # Low: Nodes range [0,1], Edges range [0,7]
+                "medium": {"irr_nodes": (1, 1), "irr_edges": (0, 100000)},   # Mid: Nodes range [2,2], Edges range [8,10]
+                "hard": {"irr_nodes": (2, 11000003), "irr_edges": (0, 100000)}   # High: Nodes range [3,13], Edges range [11,28]
+            },
+            18: {
+                "light": {"irr_nodes": (0, 0), "irr_edges": (0, 100000)},    # Low: Nodes range [0,1], Edges range [0,7]
+                "medium": {"irr_nodes": (1, 1), "irr_edges": (0, 100000)},   # Mid: Nodes range [2,2], Edges range [8,10]
+                "hard": {"irr_nodes": (2, 11000003), "irr_edges": (0, 100000)}   # High: Nodes range [3,13], Edges range [11,28]
+            },
+            19: {
+                "light": {"irr_nodes": (0, 0), "irr_edges": (0, 100000)},    # Low: Nodes range [0,1], Edges range [0,7]
+                "medium": {"irr_nodes": (1, 1), "irr_edges": (0, 100000)},   # Mid: Nodes range [2,2], Edges range [8,10]
+                "hard": {"irr_nodes": (2, 11000003), "irr_edges": (0, 100000)}   # High: Nodes range [3,13], Edges range [11,28]
+            },
+            20: {
+                "light": {"irr_nodes": (0, 0), "irr_edges": (0, 100000)},    # Low: Nodes range [0,1], Edges range [0,7]
+                "medium": {"irr_nodes": (1, 1), "irr_edges": (0, 100000)},   # Mid: Nodes range [2,2], Edges range [8,10]
+                "hard": {"irr_nodes": (2, 11000003), "irr_edges": (0, 100000)}   # High: Nodes range [3,13], Edges range [11,28]
+            },
+            21: {
+                "light": {"irr_nodes": (0, 0), "irr_edges": (0, 100000)},    # Low: Nodes range [0,1], Edges range [0,7]
+                "medium": {"irr_nodes": (1, 1), "irr_edges": (0, 100000)},   # Mid: Nodes range [2,2], Edges range [8,10]
+                "hard": {"irr_nodes": (2, 11000003), "irr_edges": (0, 100000)}   # High: Nodes range [3,13], Edges range [11,28]
+            },
+            22: {
+                "light": {"irr_nodes": (0, 0), "irr_edges": (0, 100000)},    # Low: Nodes range [0,1], Edges range [0,7]
+                "medium": {"irr_nodes": (1, 1), "irr_edges": (0, 100000)},   # Mid: Nodes range [2,2], Edges range [8,10]
+                "hard": {"irr_nodes": (2, 11000003), "irr_edges": (0, 100000)}   # High: Nodes range [3,13], Edges range [11,28]
+            }
+        }
+        if noise_level != "clean":
+            min, max = CONDITION_RANGES[n][noise_level]["irr_nodes"]
+            self.w0 = min
+            self.w1 = max
+            self.l = np.ones(self.d, dtype=int) * self.w0
+            self.add_unused = False
+        count = 0  # 记录尝试次数
+        for i in range(try_num):  # 进行 `try_num` 次尝试
+            self.init()  # 初始化
+            data = Data()  # 生成数据对象
+            self.ln = data(None, self.d, fix_categ=fix_categ)  # 生成层级名称
+            self.N = []  # 生成节点名称
+            for i in range(self.d):
+                self.N.append(data(self.ln[i], self.l[i]))  # 逐层填充节点名
+            self.unique_name = data.unique  # 存储唯一名称
+            self.assign_unique()  # 分配唯一性
+            self.choose_param(n, m)  # 选择参数
+            self.setup_template()  # 设置模板
+            valid = self.reasonable_sort(first=first)  # 进行合理的拓扑排序
+            count += 1  # 计数
+            if valid:
+                # print(f"count: {count}")
+                self.design(s, max_param=max_param)  # 设计问题
+                self.fill_all()  # 填充所有信息
+                self.ques_pos = len(self.topological_order)  # 记录问题的位置
+                self.ques_idx = self.topological_order[-1]  # 记录问题索引
 
-        # scale graph when noise is on
-        self.add_unused = noise_level != "clean"
-        if self.add_unused:
-            mini, maxi = CONDITION_RANGES[min(s, 22)][noise_level]
-            mini = max(1, mini) 
-            self.w0 = mini
-            self.w1 = maxi
-            self.l  = np.ones(self.d, int) * self.w0
-            e_min = (self.d - 1) * self.w0
-            e_max = (self.d - 1) * self.w0**2
-            self.e = max(e_min, min(self.e, e_max))
+                if self.add_unused:
+                    self.design_unused(max_param=max_param)  # 处理未使用的变量
+                else:
+                    # 如果不开启，直接将问题顺序设为拓扑排序顺序（不添加干扰信息）
+                    self.problem_order = copy.deepcopy(self.topological_order)
+                    
+                # print([n for n in self.template.nodes])
 
-        for _ in range(try_num):
-            self.init()
-            data = Data()
-            self.ln = data(None, self.d, fix_categ=fix_categ)
-            self.N  = [data(self.ln[i], self.l[i]) for i in range(self.d)]
-            self.unique_name = data.unique
-            self.assign_unique()
-            self.choose_param(n, m)
-            self.setup_template()
-            if not self.reasonable_sort(first) or not self.topological_order:
-                continue
-            self.design(s, max_param)
-            self.fill_all()
-            self.ques_pos = len(self.topological_order)
-            self.ques_idx = self.topological_order[-1]
-
-            # add distractors
-            if self.add_unused and self.record["remain"]:
-                low, high = CONDITION_RANGES[min(s, 22)][noise_level]
-                self.design_unused(max_param=max_param,
-                                target_range=(low, high))
-            else:
-                self.problem_order = copy.deepcopy(self.topological_order)
-
-            # finalize
-            self.ori_order = copy.deepcopy(self.problem_order)
-            if self.perm:
-                self.problem_order = random_topological_sort(self.template)
-            low, high = CONDITION_RANGES[min(s, 22)][noise_level]
-            n_irrel = len(self.find_irrelevant_nodes_edges()[0])
-            if not (low <= n_irrel <= high):
-                continue
-            if not self.be_shortest:
-                seq = random_topological_sort(self.template)
-                seq.remove(self.rand)
-                self.random_solution_order = seq[: seq.index(self.ques_idx) + 1]
-                self.ques_pos = len(self.random_solution_order)
-
-            return True
-
-        return False
+                self.ori_order = copy.deepcopy(self.problem_order)  # 复制原始问题顺序
+                if self.perm:
+                    self.problem_order = random_topological_sort(self.template)  # 进行拓扑排序
+                if not self.be_shortest:
+                    random_solution_order = random_topological_sort(self.template)  # 随机解顺序
+                    random_solution_order.remove(self.rand)  # 移除随机变量
+                    query_idx = random_solution_order.index(self.ques_idx)  # 记录查询索引
+                    self.random_solution_order = random_solution_order[:query_idx+1]  # 设定随机解顺序
+                    self.ques_pos = len(self.random_solution_order)  # 设定问题位置
+                return True
+        return False  # 生成失败
 
     def assign_unique(self):
+        '''
+        根据 `data` 分配唯一参数。
+        '''
         for i in range(self.d):
             for j, name in enumerate(self.N[i]):
                 if name in self.unique_name:
-                    self.unique.append((i, j))
-                    self.graph.nodes[(i, j)]['unique'] = True
+                    self.unique.append((i, j))  # 记录唯一项
+                    self.graph.nodes[(i, j)]['unique'] = True  # 在图中标记唯一性
 
 
     def generate_background(self):
@@ -275,7 +375,10 @@ class Problem(Graph):
         Generates a background paragraph describing the problem structure before the problem statement.
         """
         background = "Background: "
+        
+        # 1) Summarize categories and items in each layer
         for i in range(len(self.N)):
+            # self.ln[i] might be something like "School" or "Classroom" etc.
             layer_count = len(self.N[i])
             if layer_count > 1:
                 background += (
@@ -286,9 +389,15 @@ class Problem(Graph):
                 background += (
                     f"There is 1 type of {self.ln[i]}: {self.N[i][0]}. "
                 )
+
+        # adjacency() gives you a dict: param -> {child_param: edge_data}
         for param, value in self.template.adjacency():
             associated_items = list(value.keys())
+
+            # Attempt to get a user-friendly name for param
             param_name = self.get_name_if_possible(param)
+
+            # Build the line based on the number of children
             if len(associated_items) == 1:
                 background += f"Each {param_name} can have {self.get_name_if_possible(associated_items[0])}. "
             elif len(associated_items) == 2:
@@ -297,6 +406,7 @@ class Problem(Graph):
                     f"{self.get_name_if_possible(associated_items[0])} and {self.get_name_if_possible(associated_items[1])}. "
                 )
             elif len(associated_items) > 2:
+                # more than 2 children
                 child_names = [self.get_name_if_possible(ch) for ch in associated_items]
                 all_but_last = ", ".join(child_names[:-1])
                 last_item = child_names[-1]
@@ -321,29 +431,32 @@ class Problem(Graph):
         return str(param)
 
     def to_problem(self):
+        '''
+        使用 `gen` 生成问题后，将抽象模板转换为实际问题。
+        '''
         for param in self.problem_order:
-            self.parse(param)
+            self.parse(param)  # 解析参数并生成问题文本
         
-        l, i, j, k = self.ques_idx
+        l, i, j, k = self.ques_idx  # 获取问题索引
         if l == 0:
-            ques = f"How many {self.N[i+1][k]} does {self.N[i][j]} have?"
+            ques = f"How many {self.N[i+1][k]} does {self.N[i][j]} have?"  # 生成问题文本
         elif l == 1:
             ques = f"How many {self.ln[k]} does {self.N[i][j]} have?"
 
-        self.shuffle()
+        self.shuffle()  # 随机打乱问题顺序
 
         for param in self.problem_order:
             if param[0] == 0:
-                self.problem.append(self.prob_dict[param])
-        self.problem.append(ques)
+                self.problem.append(self.prob_dict[param])  # 添加问题部分
+        self.problem.append(ques)  # 添加问题文本
 
         # self.draw()
         my_queue = self.topological_order if self.be_shortest else self.random_solution_order
         for param in my_queue:
-            self.decode(param)
+            self.decode(param)  # 解析参数，生成解答过程
         
-        self.ans = self.lookup[self.ques_idx].a
-        self.set_whole_template()
+        self.ans = self.lookup[self.ques_idx].a  # 计算最终答案
+        self.set_whole_template()  # 设定完整模板
 
 
     def to_partial_problem(self, partial=None):
@@ -395,6 +508,23 @@ class Problem(Graph):
         return hash_val
 
     def add_partial_param(self, param):
+        '''
+        ex. partial_inst_param = [
+        (0, 1, 2, 3),  # 层级 0,从 (1,2) 到 (3)
+        (0, 2, 4, 5)   # 层级 0,从 (2,4) 到 (5)
+        ]
+        add_partial_param((0, 2, 4, 6))
+        •	先找到 (0, 2, 4, 5)，因为 i+1 != k:
+            •	创建新节点 (1, 3, 5, 6) 并加入 partial_param 和 partial_inter。
+            •	连接 (1, 3, 5, 6) → (0, 2, 4, 6)。
+
+        1.	若 i+1 == k:
+	        •	直接找到已有的 (l_, i_, j_, k_) 并添加到 partial_template。
+	    2.	若 i+1 != k:
+            •	先连接已有的 (l_, i_, j_, k_) 到 param。
+            •	若缺少 (1, i_+1, k_, k)，则创建新节点，并加入 partial_param 和 partial_inter。
+            •	连接 (1, i_+1, k_, k) 到 param。
+        '''
         _, i, j, k = param
         if i+1 == k:
             for l_, i_, j_, k_ in self.partial_inst_param:
@@ -556,11 +686,10 @@ class Problem(Graph):
                 random.shuffle(pool)
                 for idx in pool:
                     sorted_idxs.append(idx)
-
+            
             self.problem_order.remove(self.rand)
             problem_order = [self.problem_order[idx] for idx in sorted_idxs]
             self.problem_order = problem_order + [self.rand]
-
             
         if args[0] == "hard":
             # print('Shuffle Level: totally random')

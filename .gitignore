@@ -1,0 +1,33 @@
+# Dataset files (generated on-the-fly)
+all_problems.json
+*.json
+
+# Validation and diagnostic scripts
+quick_validate.py
+diagnose_generation.py
+quick_test.py
+check_environment.py
+demo_dataset_workflow.py
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual environments
+venv/
+env/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
