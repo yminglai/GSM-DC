@@ -1,10 +1,60 @@
-# How is LLM Distracted by Irrelevant Context? An Analysis Using a Controlled Benchmark (EMNLP 2025 Main)
+<div align="center">
 
-GSM-DC is a synthetic data generator and evaluator, developed to study the reasoning robustness of LLMs under irrelevant context.
+# 🧮 GSM-DC: Controlled Benchmark for LLM Distraction Analysis
+
+### *How is LLM Distracted by Irrelevant Context? An Analysis Using A Controlled Benchmark*
+
+**EMNLP 2025 Main Conference**
+
+<p align="center">
+<a href="https://arxiv.org/abs/2505.18761">
+  <img src="https://img.shields.io/badge/📄_Paper-arXiv-b31b1b?style=for-the-badge&logo=arxiv&logoColor=white" alt="arXiv">
+</a>
+<a href="https://aclanthology.org/2025.emnlp-main.674/">
+  <img src="https://img.shields.io/badge/📚_ACL_Anthology-002FA7?style=for-the-badge&logo=acmdl&logoColor=white" alt="ACL Anthology">
+</a>
+<a href="https://huggingface.co/datasets/YMinglai/GSM-DC-Dataset-Sample">
+  <img src="https://img.shields.io/badge/🤗_Dataset-FFD21E?style=for-the-badge&logo=huggingface&logoColor=black" alt="Dataset">
+</a>
+<a href="https://ymingl.com/GSMDC/">
+  <img src="https://img.shields.io/badge/🌐_Website-4285F4?style=for-the-badge&logo=google-chrome&logoColor=white" alt="Website">
+</a>
+</p>
+
+<p align="center">
+<a href="https://ymingl.com/assets/pdf/gsmdc-slides.pdf">
+  <img src="https://img.shields.io/badge/📊_Slides-E34F26?style=flat-square&logo=slides&logoColor=white" alt="Slides">
+</a>
+<a href="https://ymingl.com/assets/pdf/EMNLP2025-LLM-Distraction-Poster.pdf">
+  <img src="https://img.shields.io/badge/📌_Poster-00ADD8?style=flat-square&logo=adobe-acrobat-reader&logoColor=white" alt="Poster">
+</a>
+<a href="https://github.com/yminglai/GSM-DC">
+  <img src="https://img.shields.io/github/stars/yminglai/GSM-DC?style=flat-square&logo=github&label=Stars" alt="GitHub Stars">
+</a>
+<a href="https://github.com/yminglai/GSM-DC/blob/main/LICENSE">
+  <img src="https://img.shields.io/badge/License-MIT-green.svg?style=flat-square" alt="License">
+</a>
+</p>
+
+---
+
+<p align="center">
+<a href="#-overview"><b>[Overview]</b></a> •
+<a href="#-quick-start"><b>[Quick Start]</b></a> •
+<a href="#-dataset"><b>[Dataset]</b></a> •
+<a href="#-evaluation-pipeline"><b>[Evaluation]</b></a> •
+<a href="#-citation"><b>[Citation]</b></a>
+</p>
+
+</div>
 
 ![Pipeline](imgs/pipeline.png)
 
-## Quick Start
+**GSM-DC** is a synthetic data generator and evaluator for studying the reasoning robustness of LLMs under irrelevant context injection. Control problem complexity, distractor injection, and evaluate step-wise correctness with symbolic validation.
+
+---
+
+## 🚀 Quick Start
 
 ### Installation
 ```bash
@@ -25,11 +75,13 @@ python evaluate.py
 ```
 
 Results will be saved in `eval/` directory with metrics for:
-- **Step-wise correctness**: Are all reasoning steps correct?
-- **Irrelevant-aware correctness**: Correctness without using irrelevant context
-- **Final answer accuracy**: Is the extracted answer correct?
+- ✅ **Step-wise correctness**: Are all reasoning steps correct?
+- 🎯 **Irrelevant-aware correctness**: Correctness without using irrelevant context
+- 🔢 **Final answer accuracy**: Is the extracted answer correct?
 
-### Dataset
+---
+
+## 📊 Dataset
 
 **Sample Dataset**: [YMinglai/GSM-DC-Dataset-Sample](https://huggingface.co/datasets/YMinglai/GSM-DC-Dataset-Sample)
 
@@ -37,25 +89,25 @@ The dataset contains 6,300 problems (OP 2-22) across three noise levels (light/m
 
 ---
 
-## Overview
+## 🎯 Overview
 
 This repository provides tools to:
-- **Generate** symbolic math problems as dependency graphs (DAGs)
-- **Inject** irrelevant context (IC) in a controlled manner
-- **Render** problems into natural language using GSM8K-style templates
-- **Evaluate** LLM responses at each reasoning step using a symbolic parser
-- **Visualize** graphs and reasoning pipelines
+- 🔧 **Generate** symbolic math problems as dependency graphs (DAGs)
+- 🎭 **Inject** irrelevant context (IC) in a controlled manner
+- 📝 **Render** problems into natural language using GSM8K-style templates
+- ✔️ **Evaluate** LLM responses at each reasoning step using a symbolic parser
+- 📈 **Visualize** graphs and reasoning pipelines
 
-Example usage: see `example_ic.ipynb`
+**Example**: See `example_ic.ipynb` for interactive demonstration
 
 ---
 
-## Dataset Structure and Pipeline
+## 🏗️ Dataset Structure and Pipeline
 
-Each problem is represented as a tuple: (G', M, P, S)
-- G': Augmented graph with distractors
-- M: Natural language problem
-- P: Reasoning path
+Each problem is represented as a tuple: **(G', M, P, S)**
+- **G'**: Augmented graph with distractors
+- **M**: Natural language problem
+- **P**: Reasoning path
 - S: Ground-truth solution
 
 ---
@@ -129,62 +181,63 @@ This guided search improves robustness, especially under high IC.
 
 ---
 
-## Benchmarking LLM Robustness
+## 🏆 Benchmarking LLM Robustness
 
 We benchmarked six LLMs:
 - **Closed models**: Grok-3-Beta, GPT-4.1, GPT-4o-mini
 - **Open models**: LLaMA-3.3-70B, LLaMA-3.1-8B, LLaMA-3.2-1B
 
-Prompting strategy:
-- 5-shot examples
-- Structured Background section that outlines key quantities and dependencies
-
-Metrics:
-- **SAcc**: Step Accuracy
-- **PAcc**: Path Accuracy
-- **EAcc**: Extraction Accuracy
+### Evaluation Setup
+- **Prompting**: 5-shot examples with structured Background section
+- **Metrics**:
+  - **SAcc**: Step Accuracy (step-wise correctness)
+  - **PAcc**: Path Accuracy (reasoning path)
+  - **EAcc**: Extraction Accuracy (final answer)
 
 ---
 
-## Evaluation Pipeline
+## 🔬 Evaluation Pipeline
 
 To test your own LLM using the GSM-DC dataset:
-- Run `evaluate.py`
-- Set `MODEL_PATH` to your HuggingFace model path
-- Optionally enable tree search and PRM reranking
 
-The main evaluation script (`evaluate.py`) consolidates all necessary functions for:
-- Loading the dataset from HuggingFace
-- Rebuilding Problem objects from JSON
-- Generating model responses
-- Step-wise and irrelevant-aware validation
-- Computing accuracy metrics
+```bash
+# 1. Configure evaluate.py
+MODEL_PATH = "YOUR_MODEL_PATH"
 
-### Dataset
+# 2. Run evaluation
+python evaluate.py
+```
 
-**Sample Dataset**: A representative sample of our test set is available at [YMinglai/GSM-DC-Dataset-Sample](https://huggingface.co/datasets/YMinglai/GSM-DC-Dataset-Sample)
+The evaluation script (`evaluate.py`) provides:
+- 📥 **Dataset Loading**: Automatic download from HuggingFace
+- 🔄 **Problem Reconstruction**: Rebuilds Problem objects from JSON
+- 🤖 **Model Inference**: Generates responses with optional tree search
+- ✅ **Validation**: Step-wise and irrelevant-aware correctness checking
+- 📊 **Metrics**: Computes SAcc, PAcc, and EAcc
 
-**Note**: The full GSM-DC dataset is designed to be **generated on-the-fly** using the tools in this repository. This allows researchers to:
+### Dataset Access
+
+**🤗 Sample Dataset**: [YMinglai/GSM-DC-Dataset-Sample](https://huggingface.co/datasets/YMinglai/GSM-DC-Dataset-Sample)
+
+The sample contains **6,300 problems** (OP 2-22) across three noise levels for comprehensive evaluation.
+
+**🔧 On-the-Fly Generation**: The full GSM-DC framework allows you to:
 - Control problem complexity (number of operations, reasoning depth)
 - Adjust irrelevant context injection (noise level, distractor count)
 - Generate unlimited evaluation sets with different characteristics
 
-The sample dataset contains 6,300 problems (OP 2-22) as a both in-distribution and out-of-distribution test set for full evaluation.
+---
+
+## 🙏 Acknowledgements
+
+This project builds upon:
+- [**GSM8K**](https://github.com/openai/grade-school-math) by OpenAI
+- [**iGSM**](https://github.com/facebookresearch/iGSM) by Facebook Research (hierarchical entity vocabulary and graph QA construction)
+- [**PRM**](https://github.com/sdiehl/prm) by Stephen Diehl
 
 ---
 
-## Acknowledgements
-
-This project is inspired by and builds upon:
-- [GSM8K](https://github.com/openai/grade-school-math) by OpenAI
-- [iGSM](https://github.com/facebookresearch/iGSM) by Facebook Research
-- [PRM](https://github.com/sdiehl/prm) by Stephen Diehl
-
-(This repo is forked from [iGSM](https://github.com/facebookresearch/iGSM) by using their hierarchical entity vocabulary and graph QA construction.)
-
----
-
-## Citation
+## 📖 Citation
 
 ```bibtex
 @inproceedings{yang-etal-2025-llm-reasoning,
