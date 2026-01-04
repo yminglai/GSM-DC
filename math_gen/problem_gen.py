@@ -16,39 +16,35 @@ from const.params import mod, try_num, feasible_symbols
 
 class Num(object):
     def __init__(self, a: Union[int, str]=None, mod=mod, mul=False) -> None:
-        self.mod = mod  # 取模数
-        if a == None:  # 若未提供初值
+        self.mod = mod
+        if a == None:
             if mul:
-                self.a = random.randint(1, self.mod - 1)  # 随机生成 1 到 mod-1 的整数
+                self.a = random.randint(1, self.mod - 1)
             else:
-                self.a = random.randint(0, self.mod - 1)  # 随机生成 0 到 mod-1 的整数
+                self.a = random.randint(0, self.mod - 1)
         elif isinstance(a, str):
-            self.a = int(a) % self.mod  # 若 a 是字符串，则转为整数并取模
+            self.a = int(a) % self.mod
         else:
-            self.a = a % self.mod  # 其他情况，直接取模
+            self.a = a % self.mod
     
-    # 重载加法运算符
     def __add__(self, other):
         if isinstance(other, Num):
-            return Num(self.a + other.a, self.mod)  # 若 `other` 也是 `Num`，执行模加
+            return Num(self.a + other.a, self.mod)
         else:
-            return Num(self.a + other, self.mod)  # 直接加整数
+            return Num(self.a + other, self.mod)
 
-    # 重载减法运算符
     def __sub__(self, other):
         if isinstance(other, Num):
-            return Num(self.a - other.a, self.mod)  # 模减
+            return Num(self.a - other.a, self.mod)
         else:
             return Num(self.a - other, self.mod)
 
-    # 重载乘法运算符
     def __mul__(self, other):
         if isinstance(other, Num):
-            return Num(self.a * other.a, self.mod)  # 模乘
+            return Num(self.a * other.a, self.mod)
         else:
             return Num(self.a * other, self.mod)
 
-    # 重载等号运算符
     def __eq__(self, other: Union['Num', int]) -> bool:
         if isinstance(other, int):
             return self.a == other  # 直接比较数值
@@ -62,10 +58,10 @@ class Num(object):
 class Expression(object):
     def __init__(self, value: Union[List['Expression'], Num, int]=None, op: str=None, param: tuple=None, set_value: Union[Num, int]=None) -> None:
         '''
-        三种情况：
-        1. 变量由其他值定义：value=list(...), op=..., param=param
-        2. 变量是中间计算值：value=list(...), op=..., param=None
-        3. 变量是一个确定的数值：value=value, op=None, param=None
+        Three cases:
+        1. Variable defined by other values: value=list(...), op=..., param=param
+        2. Variable is intermediate calculation: value=list(...), op=..., param=None
+        3. Variable is a definite value: value=value, op=None, param=None
         '''
         if isinstance(value, list):  # 若 `value` 是列表，则表示它依赖于其他参数
             self.param_list = value
@@ -78,10 +74,9 @@ class Expression(object):
                 self.value = value
             self.param_list = []  # 参数列表为空
 
-        self.op = op  # 存储运算符
-        self.param = param  # 参数信息
+        self.op = op
+        self.param = param
 
-    # 获取计算后的数值
     @property
     def get_value(self):
         if hasattr(self, "value"):
@@ -131,10 +126,9 @@ class Expression(object):
             lst.remove(exp0)
             lst.remove(exp1)
             exp = Expression(value=[exp0, exp1], op="add")
-            lst.insert(0, exp)  # 插入新表达式
-            return self.make_bi(lst=lst)  # 递归处理
+            lst.insert(0, exp)
+            return self.make_bi(lst=lst)
 
-    # 递归显示表达式结构
     def display(self, level=0, scale=4):
         space = " " * (4*level)
         op = " -" + self.op if self.op != None else ""

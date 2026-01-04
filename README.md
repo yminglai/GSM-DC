@@ -1,9 +1,41 @@
 # How is LLM Distracted by Irrelevant Context? An Analysis Using a Controlled Benchmark (EMNLP 2025 Main)
----
-GSM-DC is synthetic data generator and evaluator, developed to study the reasoning robustness of LLMs under irrelevant context.
----
+
+GSM-DC is a synthetic data generator and evaluator, developed to study the reasoning robustness of LLMs under irrelevant context.
 
 ![Pipeline](imgs/pipeline.png)
+
+## Quick Start
+
+### Installation
+```bash
+pip install -r requirements.txt
+# or
+conda env create -f environment.yml
+```
+
+### Evaluate Your Model
+
+```python
+# 1. Configure your model in evaluate.py
+MODEL_PATH = "YOUR_MODEL_PATH"  # e.g., "meta-llama/Llama-3.2-1B-Instruct"
+PRM_MODEL_NAME = "YOUR_PRM_MODEL"  # Optional: for tree search
+
+# 2. Run evaluation
+python evaluate.py
+```
+
+Results will be saved in `eval/` directory with metrics for:
+- **Step-wise correctness**: Are all reasoning steps correct?
+- **Irrelevant-aware correctness**: Correctness without using irrelevant context
+- **Final answer accuracy**: Is the extracted answer correct?
+
+### Dataset
+
+**Sample Dataset**: [YMinglai/GSM-DC-Dataset-Sample](https://huggingface.co/datasets/YMinglai/GSM-DC-Dataset-Sample)
+
+The dataset contains 6,300 problems (OP 2-22) across three noise levels (light/medium/hard). The full GSM-DC framework is designed for **on-the-fly generation**, allowing you to control problem complexity and distractor injection.
+
+---
 
 ## Overview
 
@@ -117,9 +149,16 @@ Metrics:
 ## Evaluation Pipeline
 
 To test your own LLM using the GSM-DC dataset:
-- Run `test_batch_saved.py`
-- Set `MODEL_PATH` and `DATASET_PATH` to your HuggingFace repo or checkpoint
+- Run `evaluate.py`
+- Set `MODEL_PATH` to your HuggingFace model path
 - Optionally enable tree search and PRM reranking
+
+The main evaluation script (`evaluate.py`) consolidates all necessary functions for:
+- Loading the dataset from HuggingFace
+- Rebuilding Problem objects from JSON
+- Generating model responses
+- Step-wise and irrelevant-aware validation
+- Computing accuracy metrics
 
 ### Dataset
 

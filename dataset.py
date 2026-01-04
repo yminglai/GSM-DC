@@ -7,12 +7,9 @@ from tqdm import tqdm
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from datasets import load_dataset
 
-# ---------------------------------------------------------------------
-# ----------  把你原脚本里的 Problem/JSON 相关函数直接 import ----------
-# ---------------------------------------------------------------------
-from test_batch_saved import (      # ★ 把路径替换成你真正 utils 文件
+from test_batch_saved import (
     rebuild_problem_from_json,
-    generate_problem,                 # 你已有的
+    generate_problem,
     format_prompt, tokenizer as core_tokenizer
 )
 
@@ -23,29 +20,26 @@ torch.manual_seed(42)
 
 def debug_one_sample(
         sample_idx: int = 0,
-        data_file: str = "/absolute/path/to/all_problems.json",
-        model_name: str = "meta-llama/Llama-3.2-1B-Instruct",
+        data_file: str = "all_problems.json",
+        model_name: str = "YOUR_MODEL_PATH",  # e.g., "meta-llama/Llama-3.2-1B-Instruct"
         run_model: bool = True,
         max_new_tokens: int = 128
     ):
     """
     Quick sanity-check for:
-        • rebuild_problem_from_json
-        • prompt 格式
-        • true_correct 评分逻辑
+        - rebuild_problem_from_json
+        - prompt format
+        - true_correct scoring logic
     """
 
-    # 1) 读数据
     ds = load_dataset("json", data_files={"train": data_file})["train"]
     raw = ds[sample_idx]
     prob = rebuild_problem_from_json(raw)
 
-    # 2) 打印题面与答案
     print("\n=== PROBLEM TEXT ===")
     print(" ".join(prob.problem))
     print("GT answer:", prob.ans)
 
-    # 3) 如果需要跑模型
     if run_model:
         tok = AutoTokenizer.from_pretrained(
             model_name if "meta-llama" not in model_name else "meta-llama/Llama-3.2-1B-Instruct"
@@ -74,18 +68,19 @@ def debug_one_sample(
         print("\n=== MODEL OUTPUT ===")
         print(pred)
 
-        # 4) 判分
-        from tools.irr_tools_test import true_correct, extract_final_answer  # 若已 import 可省略
+        from tools.irr_tools_test import true_correct
+        from test_batch_saved import extract_final_answer
         irr_ok, ok, _, _ = true_correct(pred, prob)
         print(f"\n✓ correct? {ok} | ✓ irr_correct? {irr_ok}")
         print("Extracted final:", extract_final_answer(pred))
 
     else:
-        print("\n（未执行模型，仅验证 Problem 重建成功）")
-        
-debug_one_sample(
-    sample_idx=5,
-    data_file="all_problems.json",
-    model_name="meta-llama/Llama-3.2-1B-Instruct",
-    run_model=True
-)
+        print("\n(Model not executed, only verified Problem reconstruction)")
+
+if __name__ == "__main__":
+    debug_one_sample(
+        sample_idx=5,
+        data_file="all_problems.json",
+        model_name="YOUR_MODEL_PATH",  # Replace with your model path
+        run_model=True
+    )

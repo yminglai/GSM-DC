@@ -24,16 +24,13 @@ device = "cuda" if torch.cuda.is_available() else "cpu"
 fix_seed(42)
 
 OP_VALUES = (16, 17, 18, 19, 20, 21, 22)
-PRM_MODEL_NAME = "PRM_MODEL_NAME"
+PRM_MODEL_NAME = "YOUR_PRM_MODEL"  # e.g., "remy9926/llama1b_in_dist_prm"
 prm_model = AutoModelForCausalLM.from_pretrained(PRM_MODEL_NAME).to(device)
 print(f"PRM: {PRM_MODEL_NAME}")
-MODEL_PATH = "MODEL_PATH_DIRECTORY"
+MODEL_PATH = "YOUR_MODEL_PATH"  # e.g., "meta-llama/Llama-3.2-1B-Instruct"
 model_name = MODEL_PATH.split("/")[-1]
 print(f"MODEL: {MODEL_PATH}")
-# if not os.path.exists(MODEL_PATH):
-#     raise FileNotFoundError(f"Model directory not found: {MODEL_PATH}")
 print("Loading models...")
-# models = AutoModelForCausalLM.from_pretrained(MODEL_PATH).to(device)
 models = {
     op: AutoModelForCausalLM.from_pretrained(
         MODEL_PATH,
@@ -41,12 +38,11 @@ models = {
     ).to(device).eval()
     for op in OP_VALUES
 }
-# models.eval()
 print("Models loaded successfully!")
 print("Loading tokenizer...")
-model_tokenizer = AutoTokenizer.from_pretrained("YOUR_MODEL")
-model_tokenizer.pad_token = model_tokenizer.eos_token  # Ensure pad token is set
-DATASET_PATH = "HF_DATASET_REPO"
+model_tokenizer = AutoTokenizer.from_pretrained(MODEL_PATH)
+model_tokenizer.pad_token = model_tokenizer.eos_token
+DATASET_PATH = "YMinglai/GSM-DC-Dataset-Sample"
 dataset = load_dataset(DATASET_PATH, data_files="all_problems.json")["train"]
 
 
@@ -166,7 +162,7 @@ def problem_to_json(problem: Problem) -> dict:
         "problem_text": problem_text,
         "solution_text": solution_text,
         "topological_order": topo_list,
-        "expression_relationships": expression_relationships  # 新增字段，记录 add、mul 和 diff 关系
+        "expression_relationships": expression_relationships
     }
     return out_dict
 
@@ -216,7 +212,7 @@ def rebuild_problem_from_json(data_dict: dict) -> Problem:
     node_data = data_dict["node_data"]
     layer_counts = {}
     for key, value in node_data.items():
-        node_str = value["node"]  # 例如 "(0, 0)"
+        node_str = value["node"]
         layer_str, idx_str = node_str.strip("()").split(",")
         layer = int(layer_str)
         idx   = int(idx_str)
@@ -238,7 +234,7 @@ def rebuild_problem_from_json(data_dict: dict) -> Problem:
         layer_str, idx_str = node_str.strip("()").split(",")
         layer = int(layer_str)
         idx   = int(idx_str)
-        label = key  # 使用 JSON 中的键作为 label
+        label = key
         problem.N[layer][idx] = label
         problem.graph.nodes[(layer, idx)]["unique"] = bool(value["unique"])
         if bool(value["unique"]):

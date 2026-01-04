@@ -9,6 +9,18 @@ quick_test.py
 check_environment.py
 demo_dataset_workflow.py
 
+# Redundant test files (removed from repo)
+test_batch.py
+test_ground_truth_stepwise.py
+test_denoise.py
+
+# Generated reports and outputs
+eval/
+*.log
+
+# Cleanup documentation
+CLEANUP_PLAN.md
+
 # Python
 __pycache__/
 *.py[cod]

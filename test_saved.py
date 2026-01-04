@@ -17,9 +17,6 @@ def save_problem_to_json(problem: Problem, file_path: str) -> None:
     with open(file_path, "w", encoding='utf-8') as f:
         json.dump(data_dict, f, indent=2)
 
-#    Convert a Problem object to JSON 
-#    (including topological_order if it exists, 
-#     and also storing whole_template).
 def expression_to_relationship(expr: Expression) -> dict:
     """Converts an expression into a relationship dictionary.
     
@@ -58,7 +55,6 @@ def problem_to_json(problem: Problem) -> dict:
     if final_answer is not None:
         final_answer = int(final_answer)
 
-    # --- 修改 node_data: 使用节点的 label 作为 key, 并保存节点坐标和 unique ---
     node_data = {}
     for (layer, idx), data in problem.graph.nodes(data=True):
         label = str(problem.N[layer][idx])
@@ -118,7 +114,6 @@ def problem_to_json(problem: Problem) -> dict:
                 "description": description
             })
 
-    # keep everything matching with json
     expression_relationships = {}
     if hasattr(problem, "sketch"):
         for param, expr in problem.sketch.items():
@@ -147,10 +142,6 @@ def problem_to_json(problem: Problem) -> dict:
     }
     return out_dict
 
-# =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-# 2) Load from JSON and re-construct a Problem object,
-#    then restore topological_order, whole_template, and compute n_op.
-# =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 def load_problem_from_json(file_path: str) -> dict:
     with open(file_path, "r", encoding='utf-8') as f:
         data = json.load(f)
@@ -190,7 +181,6 @@ def rebuild_problem_from_json(data_dict: dict) -> Problem:
     }
     problem = Problem(d, w0, w1, e, p, args=args)
 
-    # change node, reconstruct
     node_data = data_dict["node_data"]
     layer_counts = {}
     for key, value in node_data.items():
@@ -216,7 +206,7 @@ def rebuild_problem_from_json(data_dict: dict) -> Problem:
         layer_str, idx_str = node_str.strip("()").split(",")
         layer = int(layer_str)
         idx   = int(idx_str)
-        label = key  # 使用 JSON 中的键作为 label
+        label = key
         problem.N[layer][idx] = label
         problem.graph.nodes[(layer, idx)]["unique"] = bool(value["unique"])
         if bool(value["unique"]):
@@ -332,9 +322,6 @@ def build_name2param_dict(problem: Problem):
             param_name = f"UnsupportedParam{param}"
         problem.name2param_dict[param_name] = param
 
-# =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-# Example
-# =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 def example_demo(op =3):
     from data_gen.prototype.id_gen import IdGen_PT
     ava_hash = [i for i in range(9999)]
@@ -346,7 +333,6 @@ def example_demo(op =3):
         detail_level=0
     )
 
-    # p_format="pq" => problem text + final question
     id_gen.gen_prob(ava_hash=ava_hash, p_format="pq")
     save_problem_to_json(id_gen.problem, "my_problem.json")
     print("Saved problem to my_problem.json")
@@ -355,23 +341,11 @@ def run_validation():
     data_dict = load_problem_from_json("my_problem.json")
     problem = rebuild_problem_from_json(data_dict)
     user_solution = ". ".join(problem.solution) + "."
-    # llama_tokenizer = AutoTokenizer.from_pretrained("minglyang/llama-1b-instruct-gsmdi-mix-full")
-    # print(f"problem.problem: {}")
-    # llama_tokenizer.pad_token = llama_tokenizer.eos_token  # Ensure pad token is set
     tokenized_problem = tokenizer.encode(". ".join(problem.problem))
     print(tokenized_problem)
     tokenized_problem[0] = 383
     print(tokenized_problem)
-    # if tokenized_problem[-1] != 128009:
-        # tokenized_problem += [128009]
-    # print(f"post-processing: {tokenized_problem}")
     correct, my_print, parser = true_correct(user_solution, problem)
-    # print("Problem text:", problem.problem)
-    # print("\nSolution text:", problem.solution)
-    # print("\nCorrect?", correct)
-    # if not correct:
-        # print("Mistakes found:")
-    # my_print.display()
     
 
 if __name__ == "__main__":
