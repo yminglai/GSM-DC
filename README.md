@@ -59,14 +59,12 @@
 ### Installation
 ```bash
 pip install -r requirements.txt
-# or
-conda env create -f environment.yml
 ```
 
 ### Evaluate Your Model
 
 ```python
-# 1. Configure your model in evaluate.py
+# 1. Configure your model in evaluate.py, you can use `op=2-15` to finetune the models.
 MODEL_PATH = "YOUR_MODEL_PATH"  # e.g., "meta-llama/Llama-3.2-1B-Instruct"
 PRM_MODEL_NAME = "YOUR_PRM_MODEL"  # Optional: for tree search
 
