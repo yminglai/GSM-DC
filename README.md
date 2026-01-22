@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🧮 GSM-DC: Controlled Benchmark for LLM Distraction Analysis
+# 🧮 GSM-DC: LLM Reasoning Distraction Analysis
 
 ### *How is LLM Distracted by Irrelevant Context? An Analysis Using A Controlled Benchmark*
 
